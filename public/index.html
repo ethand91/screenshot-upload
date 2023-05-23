@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Screenshot Uploader</title>
+    <meta charset="UTF-8"/>
+  </head>
+
+  <body>
+    <video id="localVideo" width="640" height="480" autoplay></video>
+    <button id="capture" onclick="captureImage()">Take Picture</button>
+    <canvas id="localCanvas" width="640" height="480"></canvas>
+
+    <script>
+      const localVideo = document.getElementById('localVideo');
+      const localCanvas = document.getElementById('localCanvas');
+      const context = localCanvas.getContext('2d');
+
+      navigator.mediaDevices.getUserMedia({ video: true, audio: false })
+        .then((stream) => {
+          localVideo.srcObject = stream;
+          localVideo.load();
+        })
+        .catch((error) => console.error(error));
+
+      const captureImage = () => {
+        context.drawImage(localVideo, 0, 0, 640, 480);
+
+        const data = localCanvas.toDataURL('image/png');
+
+        fetch('http://localhost:3000/api/save_image', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          },
+          body: JSON.stringify({ image: data })
+        });
+      };
+    </script>
+  </body>
+</html>
